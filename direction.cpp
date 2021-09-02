@@ -24,13 +24,13 @@ void msgCallback(const sensor_msgs::LaserScan& msg)
     ROS_INFO("------------------");
 
     ROS_INFO("Which Direction ?");
-    if(front > 2.0)
+    if(front > 1.0)
         ROS_INFO("FRONT");
-    if(right > 2.0)
+    if(right > 1.0)
         ROS_INFO("RIGHT");
-    if(back > 2.0)
+    if(back > 1.0)
         ROS_INFO("BACK");
-    if(left > 2.0)
+    if(left > 1.0)
         ROS_INFO("LEFT");
     
     ROS_INFO("------------------");        
@@ -54,11 +54,23 @@ int main(int argc, char**argv)
 		msg1.linear.x=0.2;
 		msg1.linear.y=0.0; 
 		msg1.linear.z=0.0;
+	    	msg1.angular.x=0.0;
+        	msg1.angular.y=0.0;
+        	msg1.angular.z=0.0;
 	if (front < 1.0)
+		msg1.linear.x=0.0;
+		msg1.linear.y=0.0; 
+		msg1.linear.z=0.0;
+	    	msg1.angular.x=0.0;
+        	msg1.angular.y=0.0;
+        	msg1.angular.z=0.0;
 		if (right > 1)
 			msg1.linear.x=0.0;
 			msg1.linear.y=0.2; 
 			msg1.linear.z=0.0;
+	    		msg1.angular.x=0.0;
+        		msg1.angular.y=0.0;
+        		msg1.angular.z=0.0;
 			if (left > 1)
 				msg1.linear.x=0.0;
 				msg1.linear.y=-0.2; 
@@ -70,13 +82,9 @@ int main(int argc, char**argv)
 			msg1.linear.x=0.0;
 			msg1.linear.y=-0.2; 
 			msg1.linear.z=0.0;
-			if (right > 1)
-				msg1.linear.x=0.0;
-				msg1.linear.y=0.2; 
-				msg1.linear.z=0.0;
-				msg1.angular.x=0.0;
-				msg1.angular.y=0.0;
-				msg1.angular.z=0.3;
+	    		msg1.angular.x=0.0;
+        		msg1.angular.y=0.0;
+        		msg1.angular.z=0.0;
 
 	//msg1.linear.x=1.0;
         //msg1.linear.y=0.0;
@@ -92,6 +100,3 @@ int main(int argc, char**argv)
 
     return 0;
 }
-
-
-		
