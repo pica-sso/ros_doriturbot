@@ -1,0 +1,113 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on Sun Sep 12 20:17:01 2021
+
+@author: soribot
+"""
+
+import rospy
+import random
+from actionlib import SimpleActionClient, TerminalState
+from move_base_msgs.msg import MoveBaseAction, MoveBaseGoal
+from geometry_msgs.msg import Point, Quaternion
+from tf.transformations import quaternion_from_euler
+
+PI = 3.14159265359
+GLOBAL, LOCAL = 'global', 'local';
+
+class Controller:
+    def __init__(self):
+        self.feedback_counter = 0
+        self.target = random.randint(400, 450)
+        rospy.init_node("navigation_controller")
+        self.client = SimpleActionClient("move_base", MoveBaseAction)
+        while (not self.client.wait_for_server(rospy.Duration(5))):
+            rospy.loginfo("Waiting for the move_base action server to come up")
+        seq = rospy.get_param("navigation_controller/goal")
+        self.crnt_position = Point(0, 0, 0)
+        self.goal_list = list(zip(*[iter(seq)]*3))    
+        self.crnt_goal = None
+        self.found_list = []
+        self.found = False
+        self.tracking_mode = GLOBAL	# go to finish line
+        self.run()
+        
+
+    def run(self):
+        while len(self.goal_list):
+            if self.tracking_mode==GLOBAL:
+                self.global_tracking()
+            else: # LOCAL tracking mode (get closer to the object found)
+                self.feedback_counter = 0
+                self.local_tracking()
+                self.feedback_counter = 0
+                # TODO: multiple found report for same marker should be resolved
+                # TODO: possibly use time or distance delay for a solution
+                self.tracking_mode = GLOBAL
+                self.found = False
+                self.target = random.randint(400, 450)
+        rospy.loginfo(f"found at {self.found_list}")
+        rospy.loginfo("Congratulation!\n  You are done.")        
+                
+                
+                
+    def global_tracking(self):
+        self.crnt_goal = self.goal_list.pop(0)
+        goal_state = self.move_base_to(*self.crnt_goal)            
+        if goal_state == TerminalState.SUCCEEDED:
+            rospy.loginfo(f"Reached at {self.crnt_goal}")
+        elif goal_state == TerminalState.PREEMPTED:
+            rospy.loginfo(f"Goal changed at {self.crnt_position}")
+            return
+        else:
+            rospy.loginfo(f"RUN: goal state: {goal_state}")
+            rospy.loginfo("The move_base failed to get to goal for some reason")
+
+
+    def local_tracking(self):
+        # TODO: Code change needed to go further to get closer to the marker found
+        local_goal = (self.crnt_position.x+0.2, self.crnt_position.y+0.2, 0)
+        goal_state = self.move_base_to(*local_goal)
+        if goal_state == TerminalState.SUCCEEDED:
+            rospy.loginfo(f"Found marker at {self.crnt_position}")
+            self.found_list.append((self.crnt_position))   
+
+
+
+    def move_base_to(self, x, y, yaw=0):          
+        goal = MoveBaseGoal()
+        goal.target_pose.header.frame_id = "map"
+        goal.target_pose.header.stamp = rospy.Time.now()
+        goal.target_pose.pose.position = Point(x, y, 0)
+        goal.target_pose.pose.orientation = Quaternion(*quaternion_from_euler(0, 0, yaw))
+        
+        self.client.send_goal(goal, self.done_cb, self.active_cb, self.feedback_cb)
+        self.client.wait_for_result()    
+        return self.client.get_state()
+    
+
+    def feedback_cb(self, feedback):
+        self.feedback_counter += 1
+        self.crnt_position = feedback.base_position.pose.position
+        rospy.loginfo(f"count:{self.feedback_counter} tracking:{self.tracking_mode}")
+        # Simulating whether something found in the input image or not (must be handled by another callback)
+        self.found = self.feedback_counter==self.target
+        if self.found and self.tracking_mode==GLOBAL:
+            self.client.cancel_all_goals()            
+            while self.client.get_state() != TerminalState.PREEMPTED:
+            	pass
+            self.goal_list.insert(0, self.crnt_goal)	# keep current goal and process local task
+            self.tracking_mode = LOCAL          
+
+
+    def done_cb(self, _1, _2):
+        pass
+    
+    
+    def active_cb(self):
+        pass
+    
+    
+if __name__ == "__main__":
+    controller = Controller()
