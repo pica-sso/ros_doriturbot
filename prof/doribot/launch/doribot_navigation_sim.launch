@@ -14,12 +14,10 @@
   <node pkg="map_server" name="map_server" type="map_server" args="$(arg map_file)"/>
 
   <!-- AMCL -->
-  <include file="$(find turtlebot3_navigation)/launch/amcl.launch">
-	<arg name="initial_pose_x" value="0.659"/> #0.155
-	<arg name="initial_pose_y" value="-0.083"/> #-0.104
-	<arg name="initial_pose_a" value="3.2"/> #0.000
-  </include>
-
+  <include file="$(find turtlebot3_navigation)/launch/amcl.launch"/>
+	<arg name="initial_pose_x" value="0.389"/>
+	<arg name="initial_pose_y" value="-0.088"/>
+ 	<arg name="initial_pose_a" value="0.000"/>
   <!-- move_base -->
   <include file="$(find doribot)/launch/move_base.launch">
     <arg name="model" value="$(arg model)" />
