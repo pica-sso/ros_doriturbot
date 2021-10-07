@@ -1,4 +1,4 @@
-
+#!/usr/bin/env python
 
 
 
@@ -13,11 +13,11 @@ from cv_bridge import CvBridge, CvBridgeError
 from sensor_msgs.msg import CompressedImage
 
 class ImageCapture:
-    def __imit__(self, capture_rate=10.0, publish_rate=5.0):
+    def __init__(self, capture_rate=10.0, publish_rate=5.0):
         self.image = np.empty((640, 480), dtype=np.uint8)
         self.pub = rospy.Publisher('rpi_image', CompressedImage, queue_size=1)
         rospy.Timer(rospy.Duration(1/capture_rate), self.capture_image)
-        rospy.Timer(rospy.Duration(1/publish_rate), self.pulish_image)
+        rospy.Timer(rospy.Duration(1/publish_rate), self.publish_image)
 
     def capture_image(self, event=None):
         cam = cv2.VideoCapture("/dev/video0", cv2.CAP_V4L)
@@ -40,8 +40,8 @@ class ImageCapture:
         self.pub.publish(msg)
         rospy.loginfo("image was published")
 
-    if __name__ == "__main__":
-        rospy.init_node("image_capture")
-        ImageCapture(capture_image(4.0, publish_rate=2.0))
-        rospy.spin()
+if __name__ == "__main__":
+    rospy.init_node("image_capture")
+    ImageCapture(capture_rate=4.0, publish_rate=2.0)
+    rospy.spin()
 
