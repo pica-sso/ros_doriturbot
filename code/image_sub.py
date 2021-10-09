@@ -53,3 +53,8 @@ class ImageAnalysis:
             cv2.destroyWindows()
         rospy.loginfo("image was analyzed")
 
+        
+if __name__ == "__main__":
+    rospy.init_node("image_analize")
+    ImageAnalysis()
+    rospy.spin()
