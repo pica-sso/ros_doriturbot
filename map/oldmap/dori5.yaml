@@ -1,0 +1,7 @@
+image: /home/lee/map/dori5.pgm
+resolution: 0.00245902
+origin: [-0.26311514,-1.70410086, 0.000000]
+negate: 0
+occupied_thresh: 0.65
+free_thresh: 0.196
+
